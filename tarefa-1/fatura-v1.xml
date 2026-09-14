@@ -13,7 +13,7 @@
     <produtos>
         <produto>
             <codigo>P001</codigo>
-            <designacao>Teclado</designacao>
+            <designacao>Livro</designacao>
             <quantidade>2</quantidade>
             <preco>18.00</preco>
         </produto>

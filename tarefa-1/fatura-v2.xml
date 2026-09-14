@@ -12,13 +12,13 @@
     <produtos>
         <produto>
             <codigo>P001</codigo>
-            <designacao>Teclado</designacao>
+            <designacao>Livro</designacao>
             <quantidade>2</quantidade>
             <preco>25.00</preco>
         </produto>
         <produto>
             <codigo>P002</codigo>
-            <designacao>Rato</designacao>
+            <designacao>Revista</designacao>
             <quantidade>1</quantidade>
             <preco>15.00</preco>
         </produto>
