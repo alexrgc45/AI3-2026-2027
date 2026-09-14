@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bookstore>
+    <book category="fiction">
+        <title lang="pt">O mundo Celta</title>
+        <author>Miranda Green</author>
+        <year>1993</year>
+        <price>110</price>
+    </book>
+</bookstore>
