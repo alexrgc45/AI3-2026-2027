@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bookstore>
-    <book category="fiction">
-        <title lang="pt">O Mistério da Biblioteca</title>
-        <author>Maria Silva</author>
-        <year>2024</year>
+    <book category="history">
+        <title lang="pt">O mundo Celta</title>
+        <author>Miranda Green</author>
+        <year>1993</year>
         <price value="19.90"/>
     </book>
 </bookstore>
