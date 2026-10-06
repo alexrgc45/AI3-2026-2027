@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fatura id="2026/001">
+    <cabecalho>
+        <data>2026-09-14</data>
+        <cliente>
+            <nome>Nuno</nome>
+            <morada>Rua Principal, 10, Viseu</morada>
+            <telefone>912345678</telefone>
+        </cliente>
+    </cabecalho>
+
+    <produtos>
+        <produto>
+            <codigo>P001</codigo>
+            <designacao>Livro</designacao>
+            <quantidade>2</quantidade>
+            <preco>25.00</preco>
+        </produto>
+        <produto>
+            <codigo>P002</codigo>
+            <designacao>Revista</designacao>
+            <quantidade>1</quantidade>
+            <preco>14.00</preco>
+        </produto>
+    </produtos>
+</fatura>
