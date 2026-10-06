@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="aviso">
+        <xs:complexType mixed="true">
+
+            <xs:sequence>
+
+                <xs:element name="nome" type="xs:string"/>
+
+                <xs:element name="numerotrabalho" type="xs:integer"/>
+
+                <xs:element name="dataentrega"
+                            type="xs:date"
+                            minOccurs="0"
+                            maxOccurs="2"/>
+
+                <xs:choice minOccurs="1" maxOccurs="2">
+                    <xs:element name="email" type="xs:string"/>
+                    <xs:element name="telefone" type="xs:string"/>
+                </xs:choice>
+
+            </xs:sequence>
+
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

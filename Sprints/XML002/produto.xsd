@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="Product">
+        <xs:complexType>
+
+            <xs:sequence>
+                <xs:element name="ProductName" type="xs:string"/>
+                <xs:element name="ProductType" type="xs:string"/>
+                <xs:element name="Price" type="xs:integer"/>
+                <xs:element name="Class" type="xs:string"/>
+                <xs:element name="Company" type="xs:string"/>
+
+    <xs:element name="Provider" minOccurs="0" maxOccurs="3">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="Name" type="xs:string"/>
+                <xs:element name="City" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+            </xs:sequence>
+
+            <xs:attribute name="ProductID" type="xs:integer" use="required"/>
+            <xs:attribute name="Category" type="xs:string" use="optional"/>
+
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>
