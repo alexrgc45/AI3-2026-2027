@@ -1,0 +1,15 @@
+{
+  "$schema": "./turma.schema.json",
+  "disciplina": "Aplicacoes para a Internet III",
+  "totalAlunos": 20,
+    "codigo": "12A",
+  "docenteTeorica": "Ana Marques",
+  "numeroInscritosTp1": 12,
+  "docenteTp1": "Rui Tavares",
+  "numeroInscritosTp2": 8,
+  "docenteTp2": "Carla Mendes",
+  "data": "09-10-2026",
+  "cursos": ["tdm", "ei"],
+  "contacto": 232480500,
+  "planoAno1": ["ADM1", "API1", "BD1"]
+}

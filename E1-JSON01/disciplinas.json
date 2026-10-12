@@ -1,0 +1,31 @@
+{
+  "$schema": "./disciplinas.schema.json",
+  "disciplinas": {
+    "curso": "TDM",
+    "disciplina": [
+      {
+        "codigo": "12A",
+        "nome": "Aplicações para a Internet III",
+        "ano": 2,
+        "teorica": {
+          "nome": "Ana Marques",
+          "horas": 2
+        },
+        "pratica": {
+          "nome": "Rui Tavares",
+          "horas": 3
+        }
+      },
+
+      {
+        "codigo": "34A",
+        "nome": "Bases de Dados",
+        "ano": 1,
+        "teorica": {
+          "nome": "Carla Mendes",
+          "horas": 2
+        }
+      }
+    ]
+  }
+}
