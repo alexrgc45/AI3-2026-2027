@@ -460,37 +460,52 @@ components:
       additionalProperties: false
 
     Sugestao:
-      allOf:
-        - $ref: '#/components/schemas/SugestaoNova'
-        - type: object
-          required:
-            - id
-            - estado
-            - dataCriacao
-            - dataAtualizacao
-            - dataResolucao
-          properties:
-            id:
-              type: integer
-              minimum: 1
-              readOnly: true
-            estado:
-              $ref: '#/components/schemas/Estado'
-              readOnly: true
-            dataCriacao:
-              type: string
-              format: date-time
-              readOnly: true
-            dataAtualizacao:
-              type: string
-              format: date-time
-              readOnly: true
-            dataResolucao:
-              type: string
-              format: date-time
-              nullable: true
-              readOnly: true
-          additionalProperties: false
+      type: object
+      required:
+        - titulo
+        - descricao
+        - categoria
+        - numeroAluno
+        - id
+        - estado
+        - dataCriacao
+        - dataAtualizacao
+        - dataResolucao
+      properties:
+        titulo:
+          type: string
+          minLength: 10
+          maxLength: 120
+        descricao:
+          type: string
+          minLength: 20
+          maxLength: 2000
+        categoria:
+          $ref: '#/components/schemas/CodigoCategoria'
+        numeroAluno:
+          type: string
+          pattern: '^\d{5,8}$'
+        id:
+          type: integer
+          minimum: 1
+          readOnly: true
+        estado:
+          $ref: '#/components/schemas/Estado'
+          readOnly: true
+        dataCriacao:
+          type: string
+          format: date-time
+          readOnly: true
+        dataAtualizacao:
+          type: string
+          format: date-time
+          readOnly: true
+        dataResolucao:
+          type: string
+          format: date-time
+          nullable: true
+          readOnly: true
+      additionalProperties: false
 
     AcompanhamentoNovo:
       type: object
@@ -673,4 +688,3 @@ components:
                 type: string
             additionalProperties: false
       additionalProperties: false
-
