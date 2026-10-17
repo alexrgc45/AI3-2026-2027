@@ -1,8 +1,11 @@
-
 openapi: 3.0.3
 info:
   title: API de Sugestões dos Alunos
-  description: API para gerir sugestões dos alunos, o seu acompanhamento e as estatísticas de resolução.
+  description: >-
+    API para gerir sugestões dos alunos, o seu acompanhamento e as estatísticas de resolução.
+    As estatísticas são recalculadas de hora a hora; as categorias podem ser armazenadas em cache
+    durante 24 horas. As transições válidas são submetida para em_analise, em_analise para
+    aceite ou rejeitada, e aceite para resolvida; rejeitada e resolvida são estados finais.
   version: 1.0.0
 
 servers:
@@ -156,7 +159,14 @@ paths:
         '404':
           $ref: '#/components/responses/ErroNotFound'
         '409':
-          $ref: '#/components/responses/ErroConflict'
+          description: "Conflito de negócio: a sugestão só pode ser editada quando está no estado submetida."
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
         '412':
           $ref: '#/components/responses/ErroPreconditionFailed'
         default:
@@ -173,7 +183,14 @@ paths:
         '404':
           $ref: '#/components/responses/ErroNotFound'
         '409':
-          $ref: '#/components/responses/ErroConflict'
+          description: "Conflito de negócio: uma sugestão só pode ser retirada quando está no estado submetida."
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
         default:
           $ref: '#/components/responses/ErroDefault'
 
@@ -223,7 +240,17 @@ paths:
         '404':
           $ref: '#/components/responses/ErroNotFound'
         '409':
-          $ref: '#/components/responses/ErroConflict'
+          description: >-
+            Conflito de negócio: a transição tem de ser válida. São permitidas
+            submetida para em_analise; em_analise para aceite ou rejeitada;
+            e aceite para resolvida. Os estados rejeitada e resolvida são finais.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/CacheControlNoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
         default:
           $ref: '#/components/responses/ErroDefault'
 
@@ -382,15 +409,6 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Erro'
-    ErroConflict:
-      description: "Conflito de negócio: a operação viola uma regra do domínio."
-      headers:
-        Cache-Control:
-          $ref: '#/components/headers/CacheControlNoStore'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Erro'
     ErroDefault:
       description: Erro inesperado ou não tratado.
       headers:
@@ -457,55 +475,38 @@ components:
         numeroAluno:
           type: string
           pattern: '^\d{5,8}$'
-      additionalProperties: false
 
     Sugestao:
-      type: object
-      required:
-        - titulo
-        - descricao
-        - categoria
-        - numeroAluno
-        - id
-        - estado
-        - dataCriacao
-        - dataAtualizacao
-        - dataResolucao
-      properties:
-        titulo:
-          type: string
-          minLength: 10
-          maxLength: 120
-        descricao:
-          type: string
-          minLength: 20
-          maxLength: 2000
-        categoria:
-          $ref: '#/components/schemas/CodigoCategoria'
-        numeroAluno:
-          type: string
-          pattern: '^\d{5,8}$'
-        id:
-          type: integer
-          minimum: 1
-          readOnly: true
-        estado:
-          $ref: '#/components/schemas/Estado'
-          readOnly: true
-        dataCriacao:
-          type: string
-          format: date-time
-          readOnly: true
-        dataAtualizacao:
-          type: string
-          format: date-time
-          readOnly: true
-        dataResolucao:
-          type: string
-          format: date-time
-          nullable: true
-          readOnly: true
-      additionalProperties: false
+      allOf:
+        - $ref: '#/components/schemas/SugestaoNova'
+        - type: object
+          required:
+            - id
+            - estado
+            - dataCriacao
+            - dataAtualizacao
+            - dataResolucao
+          properties:
+            id:
+              type: integer
+              minimum: 1
+              readOnly: true
+            estado:
+              $ref: '#/components/schemas/Estado'
+              readOnly: true
+            dataCriacao:
+              type: string
+              format: date-time
+              readOnly: true
+            dataAtualizacao:
+              type: string
+              format: date-time
+              readOnly: true
+            dataResolucao:
+              type: string
+              format: date-time
+              nullable: true
+              readOnly: true
 
     AcompanhamentoNovo:
       type: object
@@ -525,7 +526,6 @@ components:
           minLength: 5
           maxLength: 60
           pattern: '^[A-Z][a-z]+ [A-Z][a-z]+$'
-      additionalProperties: false
 
     Acompanhamento:
       allOf:
@@ -547,7 +547,6 @@ components:
               type: string
               format: date-time
               readOnly: true
-          additionalProperties: false
 
     ListaSugestoes:
       type: object
