@@ -1,0 +1,20 @@
+[
+  {
+    "utilizador": "12345",
+    "nome": "Ana Silva",
+    "papel": "aluno",
+    "hashPalavraPasse": "$2b$10$hagdJgo4fRQ/yBv1UFvgf.S7qT8k2acxooqFgt4UfqY/fn1j9P8aK"
+  },
+  {
+    "utilizador": "67890",
+    "nome": "Bruno Costa",
+    "papel": "aluno",
+    "hashPalavraPasse": "$2b$10$7O8ut8NZNsbIaypIq.644ep6HG6E/NfGsUGwaKhZFpvtWmJKnptw6"
+  },
+  {
+    "utilizador": "rita.sousa",
+    "nome": "Rita Sousa",
+    "papel": "servicos",
+    "hashPalavraPasse": "$2b$10$HmkGUDGlhU9PfvMvh/jUluDF05yB8hAVGwwPH75Vy/8wRU6V5t3sO"
+  }
+]

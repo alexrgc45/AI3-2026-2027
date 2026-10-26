@@ -1,0 +1,46 @@
+[
+  {
+    "id": 1,
+    "titulo": "Melhorar o espaço de estudo",
+    "descricao": "Sugiro mais mesas e tomadas na sala de estudo.",
+    "categoria": "instalacoes",
+    "numeroAluno": "12345",
+    "estado": "submetida",
+    "dataCriacao": "2026-10-20T10:30:00Z",
+    "dataAtualizacao": "2026-10-20T10:30:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 2,
+    "titulo": "Mais recursos para as aulas",
+    "descricao": "Seria útil disponibilizar materiais de apoio antes das aulas.",
+    "categoria": "ensino",
+    "numeroAluno": "12345",
+    "estado": "em_analise",
+    "dataCriacao": "2026-10-18T09:15:00Z",
+    "dataAtualizacao": "2026-10-21T12:00:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 3,
+    "titulo": "Horário da biblioteca alargado",
+    "descricao": "Proponho alargar o horário da biblioteca durante os exames.",
+    "categoria": "servicos",
+    "numeroAluno": "67890",
+    "estado": "aceite",
+    "dataCriacao": "2026-10-16T14:00:00Z",
+    "dataAtualizacao": "2026-10-22T11:00:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 4,
+    "titulo": "Mais atividades de integração",
+    "descricao": "Sugiro organizar mais atividades de integração para os novos alunos.",
+    "categoria": "atividades",
+    "numeroAluno": "12345",
+    "estado": "resolvida",
+    "dataCriacao": "2026-10-10T08:00:00Z",
+    "dataAtualizacao": "2026-10-23T15:00:00Z",
+    "dataResolucao": "2026-10-23T15:00:00Z"
+  }
+]

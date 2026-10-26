@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de consulta de sugestões académicas">
+    <title>Sistema de Sugestões</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/app.js"></script>
+</head>
+
+<body>
+    <header class="cabecalho">
+        <div class="container">
+            <h1>Sistema de Sugestões</h1>
+            <p>Consulta e acompanha as sugestões académicas.</p>
+        </div>
+    </header>
+
+    <main class="container principal">
+        <section id="zona-login" class="painel" aria-labelledby="titulo-login">
+            <h2 id="titulo-login">Iniciar sessão</h2>
+            <p>Introduz as tuas credenciais para continuar.</p>
+
+            <form id="form-login">
+                <div class="campo">
+                    <label for="utilizador">Utilizador</label>
+                    <input id="utilizador" name="utilizador" type="text" autocomplete="username" required>
+                </div>
+
+                <div class="campo">
+                    <label for="palavra-passe">Palavra-passe</label>
+                    <input id="palavra-passe" name="palavraPasse" type="password" autocomplete="current-password"
+                        required>
+                </div>
+
+                <button id="botao-login" type="submit">Iniciar sessão</button>
+                <p id="erro-login" class="mensagem erro" role="alert" hidden></p>
+            </form>
+        </section>
+
+        <section id="zona-sessao" class="painel" aria-labelledby="titulo-sessao" hidden>
+            <div class="cabecalho-sessao">
+                <div>
+                    <h2 id="titulo-sessao">Bem-vindo/a, <span id="nome-utilizador"></span></h2>
+                    <p>Perfil: <strong id="papel-utilizador"></strong></p>
+                </div>
+                <button id="botao-logout" class="botao-secundario" type="button">
+                    Terminar sessão
+                </button>
+            </div>
+
+            <p id="tempo-sessao" class="tempo-sessao" aria-live="polite"></p>
+
+            <div class="titulo-lista">
+                <h3>Lista de sugestões</h3>
+                <button id="botao-atualizar" class="botao-secundario" type="button">
+                    Atualizar
+                </button>
+            </div>
+
+            <p id="mensagem-sugestoes" role="status" hidden></p>
+            <div id="lista-sugestoes" class="lista-sugestoes"></div>
+        </section>
+    </main>
+
+    <footer class="rodape">
+        <div class="container">
+            <p>Sistema de Sugestões Académicas</p>
+        </div>
+    </footer>
+</body>
+
+</html>
