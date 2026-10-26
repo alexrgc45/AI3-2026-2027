@@ -1,0 +1,21 @@
+{
+  "name": "ai3-2026-2027",
+  "version": "1.0.0",
+  "description": "Este repositório contém os exercícios e tarefas da disciplina. Segue este guia para configurar a tua área de trabalho local, resolver as tarefas e submetê-las para avaliação.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alexrgc45/AI3-2026-2027.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/alexrgc45/AI3-2026-2027/issues"
+  },
+  "homepage": "https://github.com/alexrgc45/AI3-2026-2027#readme"
+}
