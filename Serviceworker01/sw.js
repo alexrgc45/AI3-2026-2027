@@ -1,199 +1,213 @@
+const API_PREFIX = "/v2";
+const CATEGORIAS = [
+  {
+    codigo: "instalacoes",
+    descricao: "Edifícios, salas, equipamentos e espaços da instituição."
+  },
+  {
+    codigo: "ensino",
+    descricao: "Aulas, métodos de ensino, avaliação e apoio pedagógico."
+  },
+  {
+    codigo: "servicos",
+    descricao: "Serviços administrativos, atendimento e apoio aos alunos."
+  },
+  {
+    codigo: "atividades",
+    descricao: "Atividades extracurriculares, eventos e iniciativas."
+  },
+  {
+    codigo: "outra",
+    descricao: "Sugestões que não se enquadram nas restantes categorias."
+  }
+];
 
-
-const codigosCategoria = [
+const CATEGORIAS_VALIDAS = new Set([
   "instalacoes",
   "ensino",
   "servicos",
   "atividades",
   "outra"
-];
+]);
 
-// As descrições são exemplos, pois o OpenAPI03
-// define os códigos, mas não fornece as descrições.
-const categorias = [
-  { codigo: "instalacoes", descricao: "Instalações e espaços da instituição" },
-  { codigo: "ensino", descricao: "Ensino e atividades letivas" },
-  { codigo: "servicos", descricao: "Serviços académicos e administrativos" },
-  { codigo: "atividades", descricao: "Atividades e eventos académicos" },
-  { codigo: "outra", descricao: "Outras sugestões" }
-];
+// Dados em memória: suficientes para demonstrar a resposta da operação.
+// O contador é inicializado com um valor inteiro positivo.
+let proximoIdSugestao = 1;
 
-const sugestoes = [];
-let proximoId = 1;
-
-function respostaJSON(dados, status, headers = {}) {
+function respostaJSON(dados, status = 200, headersAdicionais = {}) {
   return new Response(JSON.stringify(dados), {
     status,
     headers: {
-      "Content-Type": "application/json",
-      ...headers
+      "Content-Type": "application/json; charset=utf-8",
+      ...headersAdicionais
     }
   });
 }
 
-// 1. GET /v2/categorias
-function listarCategorias() {
-  return respostaJSON(categorias, 200, {
-    "Cache-Control": "public, max-age=86400"
-  });
+function erroHTTP(status, mensagem, detalhes = undefined) {
+  const corpo = { codigo: status, mensagem };
+  if (detalhes && detalhes.length) corpo.detalhes = detalhes;
+
+  const headers = status === 401
+    ? { "Cache-Control": "no-store", "WWW-Authenticate": "Bearer" }
+    : { "Cache-Control": "no-store" };
+
+  return respostaJSON(corpo, status, headers);
 }
 
-// Extrai o número de aluno (claim sub) do JWT.
-// NOTA: descodificar não equivale a validar a assinatura.
-function obterNumeroAluno(token) {
+/*
+ * Extrai o claim "sub" do JWT.
+ * Importante: descodificar o payload NÃO comprova que o token é autêntico.
+ */
+function obterNumeroAlunoDoToken(request) {
+  const authorization = request.headers.get("Authorization") || "";
+  const correspondencia = authorization.match(/^Bearer\s+([^\s]+)$/i);
+
+  if (!correspondencia) return null;
+
   try {
-    if (!token || !token.startsWith("Bearer ")) {
-      return null;
-    }
+    const partes = correspondencia[1].split(".");
+    if (partes.length !== 3) return null;
 
-    const jwt = token.substring(7);
-    const partes = jwt.split(".");
-
-    if (partes.length !== 3) {
-      return null;
-    }
-
-    const payload = partes[1]
+    const payloadBase64 = partes[1]
       .replace(/-/g, "+")
       .replace(/_/g, "/");
+    const payloadCompleto = payloadBase64 + "=".repeat((4 - payloadBase64.length % 4) % 4);
+    const payloadTexto = atob(payloadCompleto);
+    const bytes = Uint8Array.from(payloadTexto, c => c.charCodeAt(0));
+    const payload = JSON.parse(new TextDecoder().decode(bytes));
 
-    const dados = JSON.parse(
-      atob(payload.padEnd(Math.ceil(payload.length / 4) * 4, "="))
-    );
-
-    if (
-      !dados.sub ||
-      !/^\d{5,8}$/.test(String(dados.sub)) ||
-      (dados.exp && dados.exp <= Math.floor(Date.now() / 1000))
-    ) {
+    // No contrato, o número de aluno é obtido da identidade autenticada (sub).
+    if (typeof payload.sub !== "string" || !/^\d{5,8}$/.test(payload.sub)) {
       return null;
     }
 
-    return String(dados.sub);
+    // Se existir exp, rejeita tokens expirados na simulação.
+    if (typeof payload.exp === "number" && payload.exp <= Math.floor(Date.now() / 1000)) {
+      return null;
+    }
+
+    return payload.sub;
   } catch {
     return null;
   }
 }
 
-// 2. POST /v2/sugestoes
-async function criarSugestao(request) {
-  let corpo;
+async function tratarListarCategorias() {
+  return respostaJSON(CATEGORIAS, 200, {
+    "Cache-Control": "public, max-age=86400"
+  });
+}
 
+async function tratarCriarSugestao(request) {
+  const numeroAluno = obterNumeroAlunoDoToken(request);
+
+  if (!numeroAluno) {
+    return erroHTTP(401, "É necessário um token Bearer válido.");
+  }
+
+  let corpo;
   try {
     corpo = await request.json();
   } catch {
-    return respostaJSON({
-      codigo: 400,
-      mensagem: "Corpo do pedido inválido.",
-      detalhes: [
-        {
-          campo: "body",
-          problema: "O corpo tem de conter JSON válido."
-        }
-      ]
-    }, 400, {
-      "Cache-Control": "no-store"
-    });
+    return erroHTTP(400, "O corpo do pedido tem de ser JSON.", [
+      { campo: "body", problema: "JSON inválido ou ausente." }
+    ]);
   }
 
   const detalhes = [];
 
-  if (
-    typeof corpo.titulo !== "string" ||
-    corpo.titulo.length < 10 ||
-    corpo.titulo.length > 120
-  ) {
+  if (!corpo || typeof corpo !== "object" || Array.isArray(corpo)) {
+    return erroHTTP(400, "O corpo do pedido não cumpre o esquema SugestaoNova.", [
+      { campo: "body", problema: "Tem de ser um objeto JSON." }
+    ]);
+  }
+
+  // titulo: obrigatório, string, entre 10 e 120 caracteres.
+  if (typeof corpo.titulo !== "string") {
     detalhes.push({
       campo: "titulo",
-      problema: "Deve ser texto com 10 a 120 caracteres."
+      problema: "É obrigatório e tem de ser uma cadeia de caracteres."
+    });
+  } else if (corpo.titulo.length < 10 || corpo.titulo.length > 120) {
+    detalhes.push({
+      campo: "titulo",
+      problema: "Tem de ter entre 10 e 120 caracteres."
     });
   }
 
-  if (
-    typeof corpo.descricao !== "string" ||
-    corpo.descricao.length < 20 ||
-    corpo.descricao.length > 2000
-  ) {
+  // descricao: obrigatório, string, entre 20 e 2000 caracteres.
+  if (typeof corpo.descricao !== "string") {
     detalhes.push({
       campo: "descricao",
-      problema: "Deve ser texto com 20 a 2000 caracteres."
+      problema: "É obrigatória e tem de ser uma cadeia de caracteres."
+    });
+  } else if (corpo.descricao.length < 20 || corpo.descricao.length > 2000) {
+    detalhes.push({
+      campo: "descricao",
+      problema: "Tem de ter entre 20 e 2000 caracteres."
     });
   }
 
-  if (
-    typeof corpo.categoria !== "string" ||
-    !codigosCategoria.includes(corpo.categoria)
-  ) {
+  // categoria: obrigatório e limitado ao enum CodigoCategoria do OpenAPI03.
+  if (typeof corpo.categoria !== "string") {
     detalhes.push({
       campo: "categoria",
-      problema: "O código da categoria não é válido."
+      problema: "É obrigatória e tem de ser uma cadeia de caracteres."
+    });
+  } else if (!CATEGORIAS_VALIDAS.has(corpo.categoria)) {
+    detalhes.push({
+      campo: "categoria",
+      problema: "Tem de ser uma das categorias permitidas."
     });
   }
 
-  if (detalhes.length > 0) {
-    return respostaJSON({
-      codigo: 400,
-      mensagem: "Os dados enviados não cumprem SugestaoNova.",
-      detalhes
-    }, 400, {
-      "Cache-Control": "no-store"
-    });
-  }
-
-  // A identidade vem do token, nunca do corpo do pedido.
-  const numeroAluno = obterNumeroAluno(
-    request.headers.get("Authorization")
-  );
-
-  if (!numeroAluno) {
-    return respostaJSON({
-      codigo: 401,
-      mensagem: "Token em falta, inválido ou expirado."
-    }, 401, {
-      "Cache-Control": "no-store",
-      "WWW-Authenticate": "Bearer"
-    });
+  if (detalhes.length) {
+    return erroHTTP(400, "O corpo do pedido não cumpre o esquema SugestaoNova.", detalhes);
   }
 
   const agora = new Date().toISOString();
+  const id = proximoIdSugestao++;
 
-  const novaSugestao = {
-    id: proximoId++,
+  /*
+   * numeroAluno do corpo, caso tenha sido enviado, é deliberadamente ignorado.
+   * O valor usado na resposta vem sempre do claim sub do token.
+   */
+  const sugestaoCriada = {
+    id,
     titulo: corpo.titulo,
     descricao: corpo.descricao,
     categoria: corpo.categoria,
-    numeroAluno: numeroAluno,
+    numeroAluno,
     estado: "submetida",
     dataCriacao: agora,
     dataAtualizacao: agora,
     dataResolucao: null
   };
 
-  sugestoes.push(novaSugestao);
-
-  return respostaJSON(novaSugestao, 201, {
-    "Location": `/v2/sugestoes/${novaSugestao.id}`,
+  return respostaJSON(sugestaoCriada, 201, {
+    "Location": `${API_PREFIX}/sugestoes/${id}`,
     "Cache-Control": "no-store"
   });
 }
 
-// Tratamento dos pedidos pelo Service Worker
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
-  if (
-    url.pathname === "/v2/categorias" &&
-    event.request.method === "GET"
-  ) {
-    event.respondWith(listarCategorias());
+  // Só intercetar os pedidos da API simulada.
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(API_PREFIX + "/")) {
     return;
   }
 
-  if (
-    url.pathname === "/v2/sugestoes" &&
-    event.request.method === "POST"
-  ) {
-    event.respondWith(criarSugestao(event.request));
+  if (url.pathname === `${API_PREFIX}/categorias` && event.request.method === "GET") {
+    event.respondWith(tratarListarCategorias());
     return;
   }
+
+  if (url.pathname === `${API_PREFIX}/sugestoes` && event.request.method === "POST") {
+    event.respondWith(tratarCriarSugestao(event.request));
+    return;
+  }
+
+  // As restantes rotas /v2 não são implementadas por esta etapa.
 });
