@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Sugestões - Autenticação</title>
+  <link rel="stylesheet" href="estilos.css">
+
+</head>
+<body data-estado="a-verificar">
+
+  <header>
+    <h1>Portal de Sugestões</h1>
+    <!-- Zona com aria-live="polite" para indicar o estado da ligação -->
+    <div id="estado-ligacao" aria-live="polite" class="online">Ligado à rede</div>
+  </header>
+<div id="atualizacao-container" hidden></div>
+  <main>
+    <!-- Estado: A Verificar Sessão -->
+    <section id="a-verificar">
+      <p>A verificar sessão, por favor aguarde...</p>
+    </section>
+
+    <!-- Estado: Sem Sessão (Formulário de Login) -->
+    <section id="sem-sessao" hidden>
+      <h2>Autenticação</h2>
+      <form id="form-login">
+        <label>
+          Utilizador (Número de aluno ou nome.apelido):
+          <input type="text" id="utilizador" name="utilizador" required pattern="^(\d{5,8}|[a-z]+\.[a-z]+)$" autocomplete="username">
+        </label>
+        
+        <label>
+          Palavra-passe:
+          <input type="password" id="palavraPasse" name="palavraPasse" required minlength="8" autocomplete="current-password">
+        </label>
+
+        <button type="submit">Entrar</button>
+        <div class="erro-mensagem" aria-live="polite"></div>
+      </form>
+      <p id="aviso-sem-ligacao" class="erro-mensagem"></p>
+    </section>
+
+    <!-- Estado: Com Sessão -->
+    <section id="com-sessao" hidden>
+      <h2 tabindex="-1">Bem-vindo à área de Sugestões</h2>
+      <p>Sessão ativa. Tempo restante: <span id="tempo-restante">--:--</span></p>
+      
+      <!-- Listagem e conteúdo da aplicação -->
+      <div id="conteudo-app">
+        <!-- Listagem de sugestões e outras interfaces entram aqui -->
+      </div>
+
+      <button id="btn-terminar-sessao">Terminar Sessão</button>
+    </section>
+
+    <!-- Estado: Sem Ligação (Offline absoluto) -->
+    <section id="sem-ligacao" hidden>
+      <h2>Modo Offline</h2>
+      <p>Sem ligação à internet detetada. Algumas funcionalidades estão limitadas.</p>
+    </section>
+  </main>
+
+  <!-- Diálogo de confirmação para terminar sessão com pendentes -->
+  <dialog id="dialog-confirmacao-terminar">
+    <form method="dialog">
+      <p class="dialog-texto">Há sugestões por enviar, que serão apagadas. Terminar sessão?</p>
+      <menu>
+        <button value="cancel" id="btn-confirmar-nao">Não</button>
+        <button value="default" id="btn-confirmar-sim">Sim</button>
+      </menu>
+    </form>
+  </dialog>
+
+  <!-- Script principal de arranque e controlo -->
+  <script type="module">
+import { arranque, configurarFormularioLogin, configurarTerminarSessao, configurarEventosRede, detetarAtualizacaoServiceWorker } from "./app.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  arranque();
+  configurarFormularioLogin();
+  configurarTerminarSessao();
+  configurarEventosRede();
+  detetarAtualizacaoServiceWorker();
+});
+  </script>
+</body>
+</html>
