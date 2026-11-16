@@ -4,115 +4,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Sistema de consulta de sugestões académicas">
-    <title>Sistema de Sugestões</title>
-    <link rel="stylesheet" href="/style.css">
-    <script type="module" src="/app.js"></script>
+    <title>Sugestões dos Alunos</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="app.js"></script>
 </head>
 
 <body>
     <header class="cabecalho">
-        <div class="container">
-            <h1>Sistema de Sugestões</h1>
-            <p>Consulta e acompanha as sugestões académicas.</p>
-        </div>
+        <h1>Sugestões dos Alunos</h1>
     </header>
 
-    <main class="container principal">
-        <!-- Zona de Configurações (Sempre visível) -->
-        <section class="painel">
-            <h3>Configurações</h3>
-            
-            <div class="campo">
-                <label for="select-tema">Tema</label>
-                <select id="select-tema">
-                    <option value="claro">Claro</option>
-                    <option value="escuro">Escuro</option>
-                </select>
-            </div>
+    <main>
+        <div id="mensagem" class="mensagem" role="alert" hidden></div>
 
-            <div class="campo">
-                <label for="select-ordenacao">Ordenação</label>
-                <select id="select-ordenacao">
-                    <option value="recentes">Recentes</option>
-                    <option value="estado">Estado</option>
-                </select>
-            </div>
-        </section>
-        
-        <section id="zona-login" class="painel" aria-labelledby="titulo-login">
-            <h2 id="titulo-login">Iniciar sessão</h2>
-            <p>Introduz as tuas credenciais para continuar.</p>
-
-            <form id="form-login">
+        <!-- Área de entrada -->
+        <section id="entrada" aria-labelledby="titulo-entrada">
+            <h2 id="titulo-entrada">Entrar</h2>
+            <form id="form-entrada" novalidate>
                 <div class="campo">
                     <label for="utilizador">Utilizador</label>
                     <input id="utilizador" name="utilizador" type="text" autocomplete="username" required>
                 </div>
-
                 <div class="campo">
-                    <label for="palavra-passe">Palavra-passe</label>
-                    <input id="palavra-passe" name="palavraPasse" type="password" autocomplete="current-password"
+                    <label for="palavraPasse">Palavra-passe</label>
+                    <input id="palavraPasse" name="palavraPasse" type="password" autocomplete="current-password"
                         required>
                 </div>
-
-                <button id="botao-login" type="submit">Iniciar sessão</button>
-                <p id="erro-login" class="mensagem erro" role="alert" hidden></p>
+                <button id="botao-entrar" type="submit">Entrar</button>
             </form>
         </section>
 
-        <section id="zona-sessao" class="painel" aria-labelledby="titulo-sessao" hidden>
-            <div class="cabecalho-sessao">
-                <div>
-                    <h2 id="titulo-sessao">Bem-vindo/a, <span id="nome-utilizador"></span></h2>
-                    <p>Perfil: <strong id="papel-utilizador"></strong></p>
-                </div>
-                <button id="botao-logout" class="botao-secundario" type="button">
-                    Terminar sessão
-                </button>
+        <!-- Área de sessão -->
+        <section id="sessao" aria-labelledby="titulo-sessao" hidden>
+            <h2 id="titulo-sessao" tabindex="-1">Sessão</h2>
+            <dl class="dados-sessao">
+                <dt>Nome</dt>
+                <dd id="sessao-nome"></dd>
+                <dt>Papel</dt>
+                <dd id="sessao-papel"></dd>
+                <dt>Expira às</dt>
+                <dd id="sessao-expira"></dd>
+                <dt>Tempo restante</dt>
+                <dd id="sessao-restante" aria-live="off"></dd>
+            </dl>
+
+            <div class="acoes">
+                <button id="botao-sugestoes" type="button">As minhas sugestões</button>
+                <button id="botao-sair" type="button" class="secundario">Terminar sessão</button>
             </div>
 
-            <p id="tempo-sessao" class="tempo-sessao" aria-live="polite"></p>
-
-            <div class="titulo-lista">
-                <h3>Lista de sugestões</h3>
-                <button id="botao-atualizar" class="botao-secundario" type="button">
-                    Atualizar
-                </button>
-            </div>
-
-            <p id="mensagem-sugestoes" role="status" hidden></p>
-            <div id="lista-sugestoes" class="lista-sugestoes"></div>
-
-            <!-- Formulário de Nova Sugestão (Apenas para alunos) -->
-            <div id="zona-nova-sugestao" class="painel" style="margin-top: 24px;" hidden>
-                <h3>Criar Nova Sugestão</h3>
-                <form id="form-sugestao">
-                    <div class="campo">
-                        <label for="titulo-sugestao">Título</label>
-                        <input type="text" id="titulo-sugestao" required>
-                    </div>
-                    <div class="campo">
-                        <label for="categoria-sugestao">Categoria</label>
-                        <input type="text" id="categoria-sugestao" required>
-                    </div>
-                    <div class="campo">
-                        <label for="descricao-sugestao">Descrição</label>
-                        <textarea id="descricao-sugestao" rows="3" required></textarea>
-                    </div>
-                    <button type="submit">Submeter Sugestão</button>
-                    <p id="erro-sugestao" class="mensagem erro" role="alert" hidden></p>
-                </form>
-            </div>
+            <ul id="lista-sugestoes" class="lista"></ul>
         </section>
-
     </main>
-
-    <footer class="rodape">
-        <div class="container">
-            <p>Sistema de Sugestões Académicas</p>
-        </div>
-    </footer>
 </body>
 
 </html>
