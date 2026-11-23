@@ -1,0 +1,13 @@
+{
+  "name": "reporta-servidor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Esqueleto do servidor da aplicacao Reporta",
+  "main": "servidor.js",
+  "scripts": {
+    "start": "node --env-file=.env servidor.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
