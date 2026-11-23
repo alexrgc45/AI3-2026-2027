@@ -1,0 +1,24 @@
+{
+  "name": "Reporta — Ocorrencias na Via Publica",
+  "short_name": "Reporta",
+  "description": "Aplicacao offline-first para comunicar e reforcar problemas na via publica.",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "/icones/icone-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icones/icone-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

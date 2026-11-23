@@ -1,0 +1,505 @@
+openapi: 3.0.3
+info:
+  title: API Reporta
+  version: 1.0.0
+  description: API REST offline-first para comunicacao e reforco de ocorrencias na via publica.
+
+servers:
+  - url: http://localhost:3000
+    description: Servidor local de desenvolvimento
+
+components:
+  securitySchemes:
+    cidadaoHeader:
+      type: apiKey
+      in: header
+      name: X-Cidadao
+      description: UUID unico gerado pelo dispositivo do cidadao na primeira utilizacao.
+    sessaoCookie:
+      type: apiKey
+      in: cookie
+      name: sessao
+      description: Cookie HttpOnly de sessao criado apos autenticacao OAuth 2.0 + PKCE (opcional).
+    adminToken:
+      type: apiKey
+      in: header
+      name: X-Admin-Token
+      description: Token de administracao para alteracao do estado das ocorrencias.
+
+  schemas:
+    Categoria:
+      type: object
+      required:
+        - id
+        - nome
+        - raio
+      properties:
+        id:
+          type: string
+          example: buraco
+        nome:
+          type: string
+          example: Buraco ou abatimento no pavimento
+        raio:
+          type: number
+          description: Raio maximo em metros para considerar duas comunicacoes como a mesma ocorrencia.
+          example: 15
+
+    Localizacao:
+      type: object
+      required:
+        - lat
+        - lng
+        - precisao
+      properties:
+        lat:
+          type: number
+          format: double
+          example: 40.2810
+        lng:
+          type: number
+          format: double
+          example: -7.5040
+        precisao:
+          type: number
+          description: Precisao da leitura GPS em metros.
+          example: 12
+
+    Ocorrencia:
+      type: object
+      required:
+        - id
+        - categoria
+        - descricao
+        - localizacao
+        - temFotografia
+        - estado
+        - comunicacoes
+        - criadaEm
+        - atualizadaEm
+        - versao
+      properties:
+        id:
+          type: integer
+          example: 87
+        categoria:
+          type: string
+          example: buraco
+        descricao:
+          type: string
+          example: Buraco fundo na faixa da direita junto a passadeira.
+        localizacao:
+          $ref: '#/components/schemas/Localizacao'
+        temFotografia:
+          type: boolean
+          example: true
+        estado:
+          type: string
+          enum: [aberta, em-resolucao, resolvida]
+          example: aberta
+        comunicacoes:
+          type: integer
+          minimum: 1
+          example: 5
+        criadaEm:
+          type: string
+          format: date-time
+        atualizadaEm:
+          type: string
+          format: date-time
+        versao:
+          type: integer
+          description: Contador monotonico incrementado pelo servidor a cada criacao, reforco ou mudanca de estado.
+          example: 14
+
+    Erro:
+      type: object
+      required:
+        - erro
+      properties:
+        erro:
+          type: string
+          example: Pedido invalido.
+
+    NovaOcorrenciaPedido:
+      type: object
+      required:
+        - categoria
+        - descricao
+        - localizacao
+      properties:
+        categoria:
+          type: string
+          example: buraco
+        descricao:
+          type: string
+          minLength: 10
+          maxLength: 500
+          example: Buraco na estrada junto ao cruzamento principal.
+        localizacao:
+          $ref: '#/components/schemas/Localizacao'
+        fotografia:
+          type: string
+          nullable: true
+          description: Data URL JPEG (image/jpeg;base64,...) com no maximo 300 KB.
+        recusadas:
+          type: array
+          items:
+            type: integer
+          description: Lista de IDs de ocorrencias candidatas recusadas explicitamente pelo cidadao («E outra»).
+
+    RespostaComunicacao:
+      type: object
+      required:
+        - resultado
+        - ocorrencia
+      properties:
+        resultado:
+          type: string
+          enum: [criada, reforcada, ja-comunicada]
+        ocorrencia:
+          $ref: '#/components/schemas/Ocorrencia'
+
+paths:
+  /v1/categorias:
+    get:
+      summary: Lista as categorias de ocorrencias e os respetivos raios de detecao
+      responses:
+        '200':
+          description: Lista de categorias disponiveis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Categoria'
+
+  /v1/ocorrencias/semelhantes:
+    get:
+      summary: Procura ocorrencias abertas ou em resolucao semelhantes nas proximidades
+      parameters:
+        - name: categoria
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Ate 5 ocorrencias candidatas ordenadas por distancia crescente
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - candidatas
+                properties:
+                  candidatas:
+                    type: array
+                    maxItems: 5
+                    items:
+                      type: object
+                      required:
+                        - ocorrencia
+                        - distancia
+                      properties:
+                        ocorrencia:
+                          $ref: '#/components/schemas/Ocorrencia'
+                        distancia:
+                          type: number
+                          description: Distancia em metros ate a ocorrencia candidata.
+        '400':
+          description: Parametros de consulta invalidos ou em falta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /v1/ocorrencias:
+    get:
+      summary: Obtem ocorrencias nao resolvidas dentro de uma bounding box (para o mapa)
+      parameters:
+        - name: bbox
+          in: query
+          required: true
+          description: Retangulo geografico no formato minLng,minLat,maxLng,maxLat
+          schema:
+            type: string
+            example: "-7.52,40.27,-7.49,40.29"
+      responses:
+        '200':
+          description: Lista de ocorrencias nao resolvidas na area pedida
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ocorrencia'
+        '400':
+          description: Parametro bbox invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+    post:
+      summary: Cria uma nova ocorrencia ou reforca automaticamente uma semelhante existente
+      security:
+        - cidadaoHeader: []
+        - sessaoCookie: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: false
+          description: UUID unico gerado no cliente ao criar a pendente para garantir idempotencia.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NovaOcorrenciaPedido'
+      responses:
+        '201':
+          description: Nova ocorrencia criada
+          headers:
+            Location:
+              schema:
+                type: string
+              description: URI da ocorrencia criada (/v1/ocorrencias/{id})
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaComunicacao'
+        '200':
+          description: Comunicacao fundida numa ocorrencia existente (reforcada) ou ja comunicada anteriormente pelo mesmo cidadao (ja-comunicada)
+          headers:
+            Location:
+              schema:
+                type: string
+            Idempotent-Replayed:
+              schema:
+                type: boolean
+              description: Presente com valor true quando a resposta provem do registo de idempotencia.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaComunicacao'
+        '400':
+          description: Dados invalidos, fotografia acima de 300 KB ou Idempotency-Key mal formada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Identificacao do cidadao em falta ou invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '409':
+          description: Idempotency-Key reutilizada com um corpo de pedido diferente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /v1/ocorrencias/{id}/reforcos:
+    post:
+      summary: Reforca explicitamente uma ocorrencia existente
+      security:
+        - cidadaoHeader: []
+        - sessaoCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comentario:
+                  type: string
+                  maxLength: 500
+      responses:
+        '201':
+          description: Reforco registado com sucesso
+          headers:
+            Location:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaComunicacao'
+        '200':
+          description: O cidadao ja tinha comunicado ou reforcado esta ocorrencia (ou repeticao idempotente)
+          headers:
+            Location:
+              schema:
+                type: string
+            Idempotent-Replayed:
+              schema:
+                type: boolean
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespostaComunicacao'
+        '401':
+          description: Identificacao do cidadao em falta ou invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Ocorrencia nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '409':
+          description: Idempotency-Key reutilizada com corpo diferente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '410':
+          description: A ocorrencia ja se encontra resolvida e nao aceita novos reforcos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /v1/ocorrencias/{id}/fotografia:
+    get:
+      summary: Obtem a fotografia JPEG associada a uma ocorrencia
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Imagem JPEG da ocorrencia
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Ocorrencia inexistente ou sem fotografia associada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /v1/ocorrencias/alteracoes:
+    get:
+      summary: Obtem as ocorrencias comunicadas ou reforcadas pelo cidadao alteradas desde o cursor indicado
+      security:
+        - cidadaoHeader: []
+        - sessaoCookie: []
+      parameters:
+        - name: desde
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 0
+            example: 0
+      responses:
+        '200':
+          description: Lista de ocorrencias atualizadas e novo cursor do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - alteracoes
+                  - cursor
+                properties:
+                  alteracoes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Ocorrencia'
+                  cursor:
+                    type: integer
+                    example: 14
+        '400':
+          description: Parametro desde invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '401':
+          description: Identificacao do cidadao em falta ou invalida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+
+  /v1/admin/ocorrencias/{id}:
+    patch:
+      summary: Altera o estado de uma ocorrencia (operacao administrativa)
+      security:
+        - adminToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - estado
+              properties:
+                estado:
+                  type: string
+                  enum: [aberta, em-resolucao, resolvida]
+      responses:
+        '200':
+          description: Estado atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ocorrencia'
+        '403':
+          description: Token de administracao invalido ou em falta
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'
+        '404':
+          description: Ocorrencia nao encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Erro'

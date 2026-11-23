@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f766e">
+  <title>Reporta — Ocorrencias na Via Publica</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icones/icone-192.png" type="image/png">
+  <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+  <header class="cabecalho">
+    <div class="cabecalho-topo">
+      <h1>Reporta</h1>
+      <span id="estado-rede" class="etiqueta-rede">A verificar ligacao...</span>
+    </div>
+    <p class="subtitulo">Comunique problemas na via publica, com ou sem ligacao.</p>
+    <div class="info-cidadao">
+      <span id="label-identidade">ID Dispositivo: <code id="id-cidadao">—</code></span>
+      <div style="display:flex; gap:0.4rem; flex-wrap:wrap; align-items:center;">
+        <a id="btn-login-github" href="/v1/auth/github/inicio" class="btn-secundario btn-pequeno" style="text-decoration:none;">Entrar com GitHub</a>
+        <a id="btn-login-google" href="/v1/auth/google/inicio" class="btn-secundario btn-pequeno oculto" style="text-decoration:none;">Entrar com Google</a>
+        <button type="button" id="btn-logout" class="btn-perigo btn-pequeno oculto">Terminar sessao</button>
+        <button type="button" id="btn-sincronizar-agora" class="btn-secundario btn-pequeno">Sincronizar agora</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <div id="aviso-sync" class="aviso-banner oculto" role="status"></div>
+
+    <div id="aviso-sessao-expirada" class="alerta-aviso oculto" role="alert">
+      A sua sessao expirou. As comunicacoes pendentes continuam guardadas no dispositivo.
+      <a href="/v1/auth/github/inicio" style="font-weight:700; color:inherit; margin-left:0.4rem;">Iniciar sessao novamente</a>
+    </div>
+
+    <!-- Secao 1: Nova Comunicacao -->
+    <section class="cartao" aria-labelledby="titulo-formulario">
+      <h2 id="titulo-formulario">Comunicar ocorrencia</h2>
+
+      <form id="form-ocorrencia" novalidate>
+        <div class="campo">
+          <label for="categoria">Categoria</label>
+          <select id="categoria" name="categoria" required></select>
+          <small id="info-raio" class="ajuda"></small>
+        </div>
+
+        <div class="campo">
+          <label for="descricao">Descricao (10 a 500 caracteres)</label>
+          <textarea
+            id="descricao"
+            name="descricao"
+            rows="3"
+            minlength="10"
+            maxlength="500"
+            placeholder="Descreva o problema e pontos de referencia proximos..."
+            required
+          ></textarea>
+          <small id="contador-caracteres" class="ajuda">0 / 500</small>
+        </div>
+
+        <div class="campo">
+          <label for="fotografia">Fotografia (opcional, JPEG ate 300 KB)</label>
+          <input type="file" id="fotografia" name="fotografia" accept="image/*" capture="environment">
+          <div id="preview-foto-container" class="preview-foto oculto">
+            <img id="preview-foto" alt="Pre-visualizacao da fotografia">
+            <div class="preview-foto-acoes">
+              <span id="info-foto" class="ajuda"></span>
+              <button type="button" id="btn-remover-foto" class="btn-perigo btn-pequeno">Remover</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="campo">
+          <div class="linha-label">
+            <label>Localizacao</label>
+            <button type="button" id="btn-obter-gps" class="btn-secundario btn-pequeno">Obter GPS atual</button>
+          </div>
+
+          <div class="grelha-coords">
+            <div>
+              <label for="lat" class="label-mini">Latitude</label>
+              <input type="number" id="lat" step="0.000001" required>
+            </div>
+            <div>
+              <label for="lng" class="label-mini">Longitude</label>
+              <input type="number" id="lng" step="0.000001" required>
+            </div>
+            <div>
+              <label for="precisao" class="label-mini">Precisao (m)</label>
+              <input type="number" id="precisao" min="0" step="1" value="10" required>
+            </div>
+          </div>
+
+          <p id="estado-precisao" class="ajuda"></p>
+          <div id="alerta-precisao" class="alerta-aviso oculto"></div>
+
+          <div class="mapa-wrapper">
+            <div class="mapa-barra">
+              <span>Mapa (clique para ajustar o ponto)</span>
+              <div class="mapa-zoom">
+                <button type="button" id="btn-zoom-menos" class="btn-secundario btn-pequeno" aria-label="Diminuir zoom">-</button>
+                <span id="nivel-zoom">z17</span>
+                <button type="button" id="btn-zoom-mais" class="btn-secundario btn-pequeno" aria-label="Aumentar zoom">+</button>
+              </div>
+            </div>
+            <div id="mapa-interactivo" class="mapa-canvas" tabindex="0" aria-label="Mapa para selecionar localizacao">
+              <div id="mapa-mosaicos" class="mapa-mosaicos"></div>
+              <div id="mapa-marcadores" class="mapa-marcadores"></div>
+              <div id="mapa-pino-atual" class="pino-atual" title="Localizacao selecionada"></div>
+            </div>
+            <small class="ajuda">A verde: ocorrencias ativas na zona. A vermelho: o seu ponto.</small>
+          </div>
+        </div>
+
+        <div id="erro-formulario" class="alerta-erro oculto" role="alert"></div>
+
+        <button type="submit" id="btn-submeter" class="btn-primario">Comunicar ocorrencia</button>
+      </form>
+
+      <!-- Painel de Ocorrencias Semelhantes (quando ha rede e candidatas proximas) -->
+      <div id="painel-semelhantes" class="painel-semelhantes oculto">
+        <h3>Ocorrencias semelhantes nas proximidades</h3>
+        <p class="ajuda">Verifique se o problema ja foi comunicado por outro cidadao antes de criar um novo registo:</p>
+        <div id="lista-candidatas" class="lista-candidatas"></div>
+        <div class="acoes-candidatas">
+          <button type="button" id="btn-confirmar-nova" class="btn-secundario">Nenhuma destas — criar nova ocorrencia</button>
+          <button type="button" id="btn-cancelar-candidatas" class="btn-texto">Voltar ao formulario</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Secao 2: As minhas comunicacoes -->
+    <section class="cartao" aria-labelledby="titulo-minhas">
+      <div class="linha-titulo">
+        <h2 id="titulo-minhas">As minhas comunicacoes</h2>
+        <span id="contador-pendentes" class="badge-pendentes oculto">0 por enviar</span>
+      </div>
+      <div id="lista-comunicacoes" class="lista-comunicacoes">
+        <p class="vazio">Ainda nao efetuou nenhuma comunicacao neste dispositivo.</p>
+      </div>
+    </section>
+
+    <!-- Registo de tentativas (util para diagnostico de backoff) -->
+    <details class="cartao detalhes-diagnostico">
+      <summary>Registo de sincronizacao (diagnostico)</summary>
+      <ul id="log-sincronizacao" class="log-lista"></ul>
+    </details>
+  </main>
+
+  <script src="/bd.js"></script>
+  <script src="/formulario.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

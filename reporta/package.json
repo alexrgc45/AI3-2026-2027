@@ -1,0 +1,14 @@
+{
+  "name": "reporta-pwa",
+  "version": "1.0.0",
+  "description": "PWA offline-first de gestao de ocorrencias na via publica",
+  "main": "servidor/servidor.js",
+  "scripts": {
+    "start": "node servidor/servidor.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2"
+  }
+}
