@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "versao": 1,
+    "titulo": "Melhorar o espaço de estudo",
+    "descricao": "Sugiro mais mesas e tomadas na sala de estudo.",
+    "categoria": "instalacoes",
+    "numeroAluno": "12345",
+    "estado": "submetida",
+    "dataCriacao": "2026-10-20T10:30:00Z",
+    "dataAtualizacao": "2026-10-20T10:30:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 2,
+    "versao": 1,
+    "titulo": "Mais horários de atendimento",
+    "descricao": "Alargar o horário da secretaria para o final da tarde.",
+    "categoria": "servicos",
+    "numeroAluno": "12345",
+    "estado": "em_analise",
+    "dataCriacao": "2026-10-22T14:00:00Z",
+    "dataAtualizacao": "2026-10-25T09:15:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 3,
+    "versao": 1,
+    "titulo": "Atividades desportivas ao fim de semana",
+    "descricao": "Organizar torneios desportivos abertos a todos os cursos.",
+    "categoria": "atividades",
+    "numeroAluno": "67890",
+    "estado": "aceite",
+    "dataCriacao": "2026-10-18T09:00:00Z",
+    "dataAtualizacao": "2026-10-28T16:40:00Z",
+    "dataResolucao": null
+  },
+  {
+    "id": 4,
+    "versao": 1,
+    "titulo": "Material de apoio disponível em linha",
+    "descricao": "Disponibilizar na plataforma os diapositivos de todas as aulas.",
+    "categoria": "ensino",
+    "numeroAluno": "67890",
+    "estado": "resolvida",
+    "dataCriacao": "2026-10-10T11:20:00Z",
+    "dataAtualizacao": "2026-11-02T10:00:00Z",
+    "dataResolucao": "2026-11-02T10:00:00Z"
+  }
+]
